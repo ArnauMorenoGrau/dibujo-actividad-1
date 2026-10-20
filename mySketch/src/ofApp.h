@@ -32,6 +32,8 @@ class ofApp : public ofBaseApp{
 		void generatePattern();
 
 		int numLines = 400;           // Cantidad de líneas perpendiculares
-		std::vector<PerpLine> lines; // Colección de líneas
+		std::vector<PerpLine> lines1; // Colección de líneas
+		std::vector<PerpLine> lines2;
+		std::vector<PerpLine> lines3;
 		
 };

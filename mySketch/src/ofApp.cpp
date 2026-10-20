@@ -8,17 +8,41 @@ void ofApp::setup(){
 }
 
 void ofApp::generatePattern() {
-    lines.clear();
+    lines1.clear();
+    lines2.clear();
+    lines3.clear();
 
     for (int i = 0; i < numLines; i++) {
         PerpLine line;
-        line.t = ofRandom(0.0f, 1.0f);              // Posición aleatoria en la trayectoria
-        line.lengthPos = ofRandom(10.0f, 140.0f);   // Longitud aleatoria lado A
-        line.lengthNeg = ofRandom(10.0f, 140.0f);   // Longitud aleatoria lado B
-        line.thickness = ofRandom(0.5f, 4.5f);      // Grosor aleatorio
-        line.color = ofColor(0, ofRandom(150, 255)); // Variación ligera de brillo
+        line.t = ofRandom(0.0f, 3.0f);              // Posición aleatoria en la trayectoria
+        line.lengthPos = ofRandom(10.0f, 90.0f);   // Longitud aleatoria lado A
+        line.lengthNeg = ofRandom(10.0f, 90.0f);   // Longitud aleatoria lado B
+        line.thickness = ofRandom(0.5f, 7.0f);      // Grosor aleatorio
+        line.color = ofColor(0); // Variación ligera de brillo
 
-        lines.push_back(line);
+        lines1.push_back(line);
+    }
+
+    for (int i = 0; i < numLines; i++) {
+        PerpLine line2;
+        line2.t = ofRandom(0.0f, 3.0f);              // Posición aleatoria en la trayectoria
+        line2.lengthPos = ofRandom(10.0f, 40.0f);   // Longitud aleatoria lado A
+        line2.lengthNeg = ofRandom(10.0f, 50.0f);   // Longitud aleatoria lado B
+        line2.thickness = ofRandom(0.5f, 7.0f);      // Grosor aleatorio
+        line2.color = ofColor(0); // Variación ligera de brillo
+
+        lines2.push_back(line2);
+    }
+
+    for (int i = 0; i < numLines; i++) {
+        PerpLine line3;
+        line3.t = ofRandom(0.0f, 3.0f);              // Posición aleatoria en la trayectoria
+        line3.lengthPos = ofRandom(1.0f, 20.0f);   // Longitud aleatoria lado A
+        line3.lengthNeg = ofRandom(10.0f, 30.0f);   // Longitud aleatoria lado B
+        line3.thickness = ofRandom(1.5f, 7.0f);      // Grosor aleatorio
+        line3.color = ofColor(0); // Variación ligera de brillo
+
+        lines3.push_back(line3);
     }
 }
 //--------------------------------------------------------------
@@ -31,40 +55,90 @@ void ofApp::draw(){
     float w = ofGetWidth();
     float h = ofGetHeight();
 
-    // Puntos de control de la curva Bézier cúbica (centrada en el canvas)
-    glm::vec2 p0(w * 0.10f, h * 0.50f); // Inicio
-    glm::vec2 p1(w * 0.35f, h * 0.15f); // Control 1
-    glm::vec2 p2(w * 0.65f, h * 0.85f); // Control 2
-    glm::vec2 p3(w * 0.90f, h * 0.50f); // Fin
+    // 1. Crear el camino usando la sintaxis estándar de openFrameworks
+    ofPolyline path;
+    path.addVertex(w * -0.5f, h * -0.30f); // Punto inicial (p0)
+    path.bezierTo(
+        w * 0.35f, h * 0.85f, // p1 (Control 1)
+        w * 0.05f, h * 0.85f, // p2 (Control 2)
+        w * 0.90f, h * 0.99f  // p3 (Fin)
+    );
+    
 
-    for (const auto& line : lines) {
-        float t = line.t;
-        float u = 1.0f - t;
+    // 2. Dibujar las líneas perpendiculares sobre el camino
+    for (const auto& line : lines1) {
+        float t = line.t; // Valor entre 0.0 y 1.0
 
-        // 1. Posición sobre la curva Bézier: B(t)
-        glm::vec2 pos = u * u * u * p0 +
-            3.0f * u * u * t * p1 +
-            3.0f * u * t * t * p2 +
-            t * t * t * p3;
+        // openFrameworks calcula la posición por ti:
+        glm::vec2 pos = path.getPointAtPercent(t);
 
-        // 2. Vector tangente (derivada de la curva): B'(t)
-        glm::vec2 tangent = 3.0f * u * u * (p1 - p0) +
-            6.0f * u * t * (p2 - p1) +
-            3.0f * t * t * (p3 - p2);
+        // Calculamos la dirección tomando una muestra milimétrica adelante:
+        glm::vec2 posNext = path.getPointAtPercent(std::min(t + 0.001f, 1.0f));
+        glm::vec2 dir = glm::normalize(posNext - pos);
 
-        // 3. Normalizar la tangente y calcular el vector normal (perpendicular)
-        glm::vec2 dir = glm::normalize(tangent);
+        // Vector perpendicular (-y, x)
         glm::vec2 normal(-dir.y, dir.x);
 
-        // 4. Calcular los extremos de la línea perpendicular
+        // Puntos final e inicial de la línea perpendicular
         glm::vec2 startPoint = pos + normal * line.lengthPos;
         glm::vec2 endPoint = pos - normal * line.lengthNeg;
 
-        // 5. Renderizar la línea
         ofSetLineWidth(line.thickness);
         ofSetColor(line.color);
         ofDrawLine(startPoint, endPoint);
     }
+    ofPolyline path2;
+    path2.addVertex(100, 100);
+    path2.bezierTo(1050, -50, 47, 768, 0, 1024);
+    
+    ofPolyline path3;
+    path3.addVertex(1000, 200);
+    path3.bezierTo(500, 100, 600, 400, 200, 1000);
+
+    for (const auto& line2 : lines2) {
+        float t = line2.t; // Valor entre 0.0 y 1.0
+
+        // openFrameworks calcula la posición por ti:
+        glm::vec2 pos = path2.getPointAtPercent(t);
+
+        // Calculamos la dirección tomando una muestra milimétrica adelante:
+        glm::vec2 posNext = path2.getPointAtPercent(std::min(t + 0.001f, 1.0f));
+        glm::vec2 dir = glm::normalize(posNext - pos);
+
+        // Vector perpendicular (-y, x)
+        glm::vec2 normal(-dir.y, dir.x);
+
+        // Puntos final e inicial de la línea perpendicular
+        glm::vec2 startPoint = pos + normal * line2.lengthPos;
+        glm::vec2 endPoint = pos - normal * line2.lengthNeg;
+
+        ofSetLineWidth(line2.thickness);
+        ofSetColor(line2.color);
+        ofDrawLine(startPoint, endPoint);
+    }
+
+    for (const auto& line3 : lines3) {
+        float t = line3.t; // Valor entre 0.0 y 1.0
+
+        // openFrameworks calcula la posición por ti:
+        glm::vec2 pos = path3.getPointAtPercent(t);
+
+        // Calculamos la dirección tomando una muestra milimétrica adelante:
+        glm::vec2 posNext = path3.getPointAtPercent(std::min(t + 0.001f, 1.0f));
+        glm::vec2 dir = glm::normalize(posNext - pos);
+
+        // Vector perpendicular (-y, x)
+        glm::vec2 normal(-dir.y, dir.x);
+
+        // Puntos final e inicial de la línea perpendicular
+        glm::vec2 startPoint = pos + normal * line3.lengthPos;
+        glm::vec2 endPoint = pos - normal * line3.lengthNeg;
+
+        ofSetLineWidth(line3.thickness);
+        ofSetColor(line3.color);
+        ofDrawLine(startPoint, endPoint);
+    }
+    
 }
 
 //--------------------------------------------------------------
