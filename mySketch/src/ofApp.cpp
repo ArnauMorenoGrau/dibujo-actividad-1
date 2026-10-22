@@ -5,6 +5,7 @@ void ofApp::setup(){
     ofSetBackgroundColor(255);
     ofSetFrameRate(60);
     generatePattern();
+    ofImage img;
 }
 
 void ofApp::generatePattern() {
@@ -12,7 +13,7 @@ void ofApp::generatePattern() {
     lines2.clear();
     lines3.clear();
     lines4.clear();
-    //lines4.clear();
+    lines5.clear();
 
     for (int i = 0; i < numLines; i++) {
         PerpLine line;
@@ -66,6 +67,9 @@ void ofApp::generatePattern() {
         lines5.push_back(line5);
     }
 }
+
+
+
 //--------------------------------------------------------------
 void ofApp::update(){
 
@@ -160,8 +164,8 @@ void ofApp::draw(){
         ofDrawLine(startPoint, endPoint);
     }
     ofPolyline path4;
-    path4.addVertex(1000, -1000);
-    path4.bezierTo(500, 100, 600, 400, 1200, 500);
+    path4.addVertex(1200, -1000);
+    path4.bezierTo(1200, 100, 600, 400, 1200, 500);
 
     for (const auto& line4 : lines4) { // Corregido: recorre lines4
         float t = line4.t;
@@ -179,14 +183,41 @@ void ofApp::draw(){
         ofSetColor(line4.color);
         ofDrawLine(startPoint, endPoint);
     }
+
+    ofPolyline path5;
+    path5.addVertex(0, 50);
+    path5.bezierTo(300, 500, 600, 700, 1200, 700);
+
+    for (const auto& line5 : lines5) { // Corregido: recorre lines4
+        float t = line5.t;
+
+        glm::vec2 pos = path5.getPointAtPercent(t);
+        glm::vec2 posNext = path5.getPointAtPercent(std::min(t + 0.001f, 1.0f));
+        glm::vec2 dir = glm::normalize(posNext - pos);
+
+        glm::vec2 normal(-dir.y, dir.x);
+
+        glm::vec2 startPoint = pos + normal * line5.lengthPos;
+        glm::vec2 endPoint = pos - normal * line5.lengthNeg;
+
+        ofSetLineWidth(line5.thickness);
+        ofSetColor(line5.color);
+        ofDrawLine(startPoint, endPoint);
+    }
     
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
+    ofImage img;
     // Pulsa Espacio o 'r' para regenerar el dibujo aleatorio
     if (key == ' ' || key == 'r' || key == 'R') {
         generatePattern();
+    }
+    if (key == 'p' || key == 'P') {
+        img.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
+        img.save("screenshot_" + ofGetTimestampString() + ".jpg");
+
     }
 }
 
