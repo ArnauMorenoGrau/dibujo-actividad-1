@@ -35,5 +35,7 @@ class ofApp : public ofBaseApp{
 		std::vector<PerpLine> lines1; // Colección de líneas
 		std::vector<PerpLine> lines2;
 		std::vector<PerpLine> lines3;
+		std::vector<PerpLine> lines4;
+		std::vector<PerpLine> lines5;
 		
 };
